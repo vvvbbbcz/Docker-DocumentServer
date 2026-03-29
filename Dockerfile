@@ -37,10 +37,8 @@ RUN apt-get -y update && \
         adduser \
         apt-utils \
         bomstrip \
-        certbot \
         cron \
         curl \
-        htop \
         libaio1${PACKAGE_SUFFIX} \
         libasound2${PACKAGE_SUFFIX} \
         libboost-regex-dev \
@@ -61,10 +59,9 @@ RUN apt-get -y update && \
         pwgen \
         supervisor \
         unixodbc-dev \
-        unzip \
         xvfb \
         xxd \
-        zlib1g || dpkg --configure -a && \
+        zlib1g || dpkg --configure -a
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
 
 RUN sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
