@@ -59,7 +59,6 @@ RUN apt-get -y update && \
         netcat-openbsd \
         nginx-extras \
         pwgen \
-        rabbitmq-server \
         supervisor \
         unixodbc-dev \
         unzip \
@@ -67,10 +66,9 @@ RUN apt-get -y update && \
         xxd \
         zlib1g || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
-    echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
-    sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
+
+RUN sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
     find /usr/lib /lib -name "libaio.so.1$PACKAGE_SUFFIX" -exec bash -c 'ln -sf "$0" "$(dirname "$0")/libaio.so.1"' {} \; && \
-    service rabbitmq-server stop && \
     service supervisor stop && \
     service nginx stop && \
     rm -rf /var/lib/apt/lists/*
