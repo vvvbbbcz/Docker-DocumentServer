@@ -95,8 +95,13 @@ RUN apt-get -y update && \
     service supervisor stop && \
     chmod 755 /app/ds/*.sh && \
     rm -f /tmp/ds.deb && \
-    rm -rf /var/log/$COMPANY_NAME && \
+    rm -rf /var/log/$COMPANY_NAME
+
+RUN apt-get -y update && \
+    apt-get -yq install \
+        postgresql-client && \
     rm -rf /var/lib/apt/lists/*
+
 
 VOLUME /var/log/$COMPANY_NAME /var/lib/$COMPANY_NAME /var/www/$COMPANY_NAME/Data /usr/share/fonts/truetype/custom
 
