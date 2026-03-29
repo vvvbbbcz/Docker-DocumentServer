@@ -23,9 +23,15 @@ ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=nonint
 
 ARG ONLYOFFICE_VALUE=onlyoffice
 
-RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
-    apt-get -y update && \
-    apt-get -yq install wget apt-transport-https gnupg locales lsb-release && \
+# Add USTC apt source
+RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list.d/ubuntu.sources && \
+    sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/ubuntu.sources
+RUN apt-get -y update && \
+    apt-get -yq install wget apt-transport-https gnupg locales lsb-release
+RUN sed -i 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
+
+RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
+RUN apt-get -y update && \
     wget -q -O /etc/apt/sources.list.d/mssql-release.list "https://packages.microsoft.com/config/ubuntu/$BASE_VERSION/prod.list" && \
     wget -q -O /tmp/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add /tmp/microsoft.asc && \
