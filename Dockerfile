@@ -31,15 +31,24 @@ RUN apt-get -y update && \
 RUN sed -i 's/http:/https:/g' /etc/apt/sources.list.d/ubuntu.sources
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
+
+# locale and MS fonts
+RUN locale-gen en_US.UTF-8 && \
+    locale-gen zh_CN.UTF-8
+RUN apt-get -y update && \
+    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    ACCEPT_EULA=Y apt-get -yq install \
+    ttf-mscorefonts-installer
+RUN if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
+        then echo 'msttcorefonts failed to download'; exit 1; fi
+
 RUN apt-get -y update && \
     wget -q -O /etc/apt/sources.list.d/mssql-release.list "https://packages.microsoft.com/config/ubuntu/$BASE_VERSION/prod.list" && \
     wget -q -O /tmp/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add /tmp/microsoft.asc && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
-    locale-gen en_US.UTF-8 && \
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
-    ACCEPT_EULA=Y apt-get -yq install \
+    apt-get -yq install \
         adduser \
         apt-utils \
         bomstrip \
@@ -73,15 +82,12 @@ RUN apt-get -y update && \
         redis-server \
         sudo \
         supervisor \
-        ttf-mscorefonts-installer \
         unixodbc-dev \
         unzip \
         xvfb \
         xxd \
         zlib1g || dpkg --configure -a && \
     # Added dpkg --configure -a to handle installation issues with rabbitmq-server on arm64 architecture
-    if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
-        then echo 'msttcorefonts failed to download'; exit 1; fi  && \
     echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
     sed -i "s/bind .*/bind 127.0.0.1/g" /etc/redis/redis.conf && \
     sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
