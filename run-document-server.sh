@@ -400,7 +400,7 @@ update_ds_settings(){
     ${JSON_EXAMPLE} -I -e "this.server.token.secret = '${JWT_SECRET}'"
     ${JSON_EXAMPLE} -I -e "this.server.token.authorizationHeader = '${JWT_HEADER}'"
   fi
- 
+
   if [ "${USE_UNAUTHORIZED_STORAGE}" == "true" ]; then
     ${JSON} -I -e "if(this.services.CoAuthoring.requestDefaults===undefined)this.services.CoAuthoring.requestDefaults={}"
     ${JSON} -I -e "if(this.services.CoAuthoring.requestDefaults.rejectUnauthorized===undefined)this.services.CoAuthoring.requestDefaults.rejectUnauthorized=false"
@@ -626,7 +626,7 @@ update_nginx_settings(){
 }
 
 update_log_settings(){
-   ${JSON_LOG} -I -e "this.categories.default.level = '${DS_LOG_LEVEL}'"
+  ${JSON_LOG} -I -e "this.categories.default.level = '${DS_LOG_LEVEL}'"
 }
 
 update_logrotate_settings(){
@@ -689,33 +689,10 @@ if [ ${ONLYOFFICE_DATA_CONTAINER_HOST} = "localhost" ]; then
     LOCAL_SERVICES+=("postgresql")
   fi
 
-  if [ ${AMQP_SERVER_HOST} != "localhost" ]; then
-    update_rabbitmq_setting
-  else
-    # change rights for rabbitmq directory
-    chown -R rabbitmq:rabbitmq ${RABBITMQ_DATA}
-    chmod -R go=rX,u=rwX ${RABBITMQ_DATA}
-    if [ -f ${RABBITMQ_DATA}/.erlang.cookie ]; then
-        chmod 400 ${RABBITMQ_DATA}/.erlang.cookie
-    fi
-
-    echo "ulimit -n $RABBIT_CONNECTIONS" >> /etc/default/rabbitmq-server
-
-    LOCAL_SERVICES+=("rabbitmq-server")
-    # allow Rabbitmq startup after container kill
-    rm -rf /var/run/rabbitmq
-  fi
+  update_rabbitmq_setting
 
   if [ ${REDIS_ENABLED} = "true" ]; then
-    if [ ${REDIS_SERVER_HOST} != "localhost" ]; then
-      update_redis_settings
-    else
-      # change rights for redis directory
-      chown -R redis:redis ${REDIS_DATA}
-      chmod -R 750 ${REDIS_DATA}
-
-      LOCAL_SERVICES+=("redis-server")
-    fi
+    update_redis_settings
   fi
 else
   # no need to update settings just wait for remote data
